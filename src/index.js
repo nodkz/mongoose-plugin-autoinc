@@ -1,5 +1,4 @@
-/* eslint-disable prefer-rest-params */
-
+// Module Scope
 const mongoose = require('mongoose');
 const _ = require('lodash');
 
@@ -94,7 +93,9 @@ exports.plugin = function plugin(schema, options) {
     // Otherwise, add the unique index directly to the custom field.
   } else {
     // Add properties for field in schema.
-    schema.path(settings.field).index({ unique: settings.unique });
+    if (settings.field !== '_id') {
+      schema.path(settings.field).index({ unique: settings.unique });
+    }
   }
 
   // Add nextCount as both a method on documents and a static on the schema for convenience.
@@ -220,10 +221,10 @@ exports.plugin = function plugin(schema, options) {
       },
       (err, counter) => {
         if (err) {
-          callback(err);
-          return;
+          return callback(err);
         }
         callback(null, counter === null ? settings.startAt : counter.count + settings.incrementBy);
+        return counter;
       }
     );
   }
@@ -245,10 +246,7 @@ exports.plugin = function plugin(schema, options) {
       { count: settings.startAt - settings.incrementBy },
       { new: true }, // new: true specifies that the callback should get the updated counter.
       err => {
-        if (err) {
-          callback(err);
-          return;
-        }
+        if (err) return callback(err);
         callback(null, settings.startAt);
       }
     );
