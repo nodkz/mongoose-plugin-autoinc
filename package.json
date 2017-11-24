@@ -69,8 +69,5 @@
     "flow": "./node_modules/.bin/flow",
     "test": "npm run coverage && npm run lint && npm run flow",
     "semantic-release": "semantic-release pre && npm publish && semantic-release post"
-  },
-  "dependencies": {
-    "lodash": "^4.17.4"
   }
 }

@@ -2,8 +2,6 @@
 
 const mongoose = require('mongoose');
 
-const _ = require('lodash');
-
 let IdentityCounter;
 
 const counterSchema = new mongoose.Schema({
@@ -86,6 +84,8 @@ export const resetCount = (settings: any) => {
   );
 };
 
+export const setByPath = () => {};
+
 // FIXME: import flow type and put correct annotations
 // $FlowFixMe
 export const autoIncrement = (schema, options) => {
@@ -129,12 +129,7 @@ export const autoIncrement = (schema, options) => {
   }
 
   if (!schema.path(settings.field) || settings.field === '_id') {
-    schema.add(_.set({}, settings.field, { type: Number }));
-    // schema.add({
-    //   settings: {
-    //     field: { type: Number },
-    //   },
-    // });
+    schema.path(settings.field, Number);
   }
 
   if (settings.groupingField.length) {
