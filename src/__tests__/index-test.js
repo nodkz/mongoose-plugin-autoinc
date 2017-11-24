@@ -1,8 +1,8 @@
-/* @flow */
+// @flow
 
 import mongoose from 'mongoose';
 import MongodbMemoryServer from 'mongodb-memory-server';
-import autoIncrement from '..';
+import { initialize, autoIncrement } from '..';
 
 let connection;
 // May require additional time for downloading MongoDB binaries
@@ -20,7 +20,7 @@ beforeAll(async () => {
   connection.on('error', (...args) => console.error(...args));
   await new Promise(resolve => {
     connection.once('open', () => {
-      autoIncrement.initialize(connection);
+      initialize(connection);
       resolve();
     });
   });
@@ -56,7 +56,7 @@ describe('mongoose-auto-increment', () => {
       name: String,
       dept: String,
     });
-    userSchema.plugin(autoIncrement.plugin, 'User');
+    userSchema.plugin(autoIncrement, 'User');
     const User = connection.model('User', userSchema);
     await User.ensureIndexes();
 
@@ -76,7 +76,7 @@ describe('mongoose-auto-increment', () => {
       dept: String,
     });
 
-    userSchema.plugin(autoIncrement.plugin, 'User');
+    userSchema.plugin(autoIncrement, 'User');
     const User = connection.model('User', userSchema);
     await User.ensureIndexes();
 
@@ -95,7 +95,7 @@ describe('mongoose-auto-increment', () => {
       dept: String,
     });
 
-    userSchema.plugin(autoIncrement.plugin, { model: 'User', field: 'userId' });
+    userSchema.plugin(autoIncrement, { model: 'User', field: 'userId' });
     const User = connection.model('User', userSchema);
     await User.ensureIndexes();
 
@@ -114,7 +114,7 @@ describe('mongoose-auto-increment', () => {
       name: String,
       dept: String,
     });
-    userSchema.plugin(autoIncrement.plugin, { model: 'User', field: 'userId' });
+    userSchema.plugin(autoIncrement, { model: 'User', field: 'userId' });
     const User = connection.model('User', userSchema);
     await User.ensureIndexes();
 
@@ -138,7 +138,7 @@ describe('mongoose-auto-increment', () => {
       dept: String,
     });
 
-    userSchema.plugin(autoIncrement.plugin, { model: 'User', startAt: 3 });
+    userSchema.plugin(autoIncrement, { model: 'User', startAt: 3 });
     const User = connection.model('User', userSchema);
     await User.ensureIndexes();
 
@@ -157,7 +157,7 @@ describe('mongoose-auto-increment', () => {
       name: String,
       dept: String,
     });
-    userSchema.plugin(autoIncrement.plugin, { model: 'User', incrementBy: 5 });
+    userSchema.plugin(autoIncrement, { model: 'User', incrementBy: 5 });
     const User = connection.model('User', userSchema);
     await User.ensureIndexes();
 
@@ -169,7 +169,7 @@ describe('mongoose-auto-increment', () => {
 
     // FIXME: wtf is this?
     expect(() => {
-      userSchema.plugin(autoIncrement.plugin);
+      userSchema.plugin(autoIncrement);
     }).toThrowError('model must be set');
 
     expect(user1._id).toBe(0);
@@ -182,7 +182,7 @@ describe('mongoose-auto-increment', () => {
         name: String,
         dept: String,
       });
-      userSchema.plugin(autoIncrement.plugin, {
+      userSchema.plugin(autoIncrement, {
         model: 'User',
         field: 'userId',
         groupingField: 'dept',
@@ -213,7 +213,7 @@ describe('mongoose-auto-increment', () => {
       });
 
       try {
-        userSchema.plugin(autoIncrement.plugin, {
+        userSchema.plugin(autoIncrement, {
           model: 'User',
           groupingField: 'dept',
         });
@@ -231,14 +231,14 @@ describe('mongoose-auto-increment', () => {
         name: String,
         dept: String,
       });
-      userSchema.plugin(autoIncrement.plugin, 'User');
+      userSchema.plugin(autoIncrement, 'User');
       const User = connection.model('User', userSchema);
       await User.ensureIndexes();
 
       const user1 = new User({ name: 'Charlie', dept: 'Support' });
-      const user2 = new User({ name: 'Charlene', dept: 'Marketing' });
-
-      const spy = jest.fn(() => {});
+      // const user2 = new User({ name: 'Charlene', dept: 'Marketing' });
+      //
+      // const spy = jest.fn(() => {});
 
       const count1 = user1.nextCount();
       // await user1.save();
@@ -258,7 +258,7 @@ describe('mongoose-auto-increment', () => {
         name: String,
         dept: String,
       });
-      userSchema.plugin(autoIncrement.plugin, 'User');
+      userSchema.plugin(autoIncrement, 'User');
       const User = connection.model('User', userSchema);
       await User.ensureIndexes();
 
@@ -320,7 +320,7 @@ describe('mongoose-auto-increment', () => {
           name: String,
           dept: String,
         });
-        userSchema.plugin(autoIncrement.plugin, {
+        userSchema.plugin(autoIncrement, {
           model: 'User',
           field: 'orderNumber',
           outputFilter(value) {
@@ -346,7 +346,7 @@ describe('mongoose-auto-increment', () => {
           name: String,
           dept: String,
         });
-        userSchema.plugin(autoIncrement.plugin, {
+        userSchema.plugin(autoIncrement, {
           model: 'User',
           field: 'userId',
           groupingField: 'dept',
@@ -355,9 +355,9 @@ describe('mongoose-auto-increment', () => {
         await User.ensureIndexes();
 
         const user1 = new User({ name: 'Charlie', dept: 'Support' });
-        const user2 = new User({ name: 'Charlene', dept: 'Marketing' });
-
-        const spy = jest.fn();
+        // const user2 = new User({ name: 'Charlene', dept: 'Marketing' });
+        //
+        // const spy = jest.fn();
 
         // const count1 = await user1.nextCount(spy);
         // await user1.save();
