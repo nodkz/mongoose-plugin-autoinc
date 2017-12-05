@@ -150,8 +150,8 @@ declare class Mongoose$Schema<Doc> {
   requiredPaths(invalidate?: boolean): string[];
   method(method: string, fn: Function): this;
   method(methods: { [method: string]: Function }): this;
-  static (method: string, fn: Function): this;
-  static (methods: { [method: string]: Function }): this;
+  static(method: string, fn: Function): this;
+  static(methods: { [method: string]: Function }): this;
   virtual(name: string, opts?: Object): VirtualType;
   virtualpath(name: string): ?VirtualType;
   indexTypes(): string[];

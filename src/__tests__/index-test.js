@@ -45,7 +45,6 @@ afterEach(async () => {
       .model('IdentityCounter')
       .collection.drop()
       .catch(() => {});
-    // TODO: uncomment after code refactoring
     // delete connection.models.IdentityCounter;
   }
 });
@@ -226,7 +225,7 @@ describe('mongoose-auto-increment', () => {
   });
 
   describe('helper function', () => {
-    it.skip('nextCount should return the next count for the model and field', async () => {
+    it('nextCount should return the next count for the model and field', async () => {
       const userSchema = new mongoose.Schema({
         name: String,
         dept: String,
@@ -236,24 +235,22 @@ describe('mongoose-auto-increment', () => {
       await User.ensureIndexes();
 
       const user1 = new User({ name: 'Charlie', dept: 'Support' });
-      // const user2 = new User({ name: 'Charlene', dept: 'Marketing' });
-      //
-      // const spy = jest.fn(() => {});
+      const user2 = new User({ name: 'Charlene', dept: 'Marketing' });
 
-      const count1 = user1.nextCount();
-      // await user1.save();
-      // const count2 = await user1.nextCount(spy);
-      // const count3 = await user2.nextCount(spy);
-      // await user2.save();
+      const count1 = await user1.nextCount();
+      await user1.save();
+      const count2 = await user1.nextCount();
+      await user2.save();
+      const count3 = await user2.nextCount();
 
       expect(count1).toBe(0);
-      // expect(user1._id).toBe(0);
-      // expect(count2).toBe(1);
-      // expect(user2._id).toBe(1);
-      // expect(count3).toBe(2);
+      expect(user1._id).toBe(0);
+      expect(count2).toBe(1);
+      expect(user2._id).toBe(1);
+      expect(count3).toBe(2);
     });
 
-    it.skip('resetCount should cause the count to reset as if there were no documents yet.', async () => {
+    it('resetCount should cause the count to reset as if there were no documents yet.', async () => {
       const userSchema = new mongoose.Schema({
         name: String,
         dept: String,
@@ -264,53 +261,15 @@ describe('mongoose-auto-increment', () => {
 
       const user = new User({ name: 'Charlie', dept: 'Support' });
 
-      const spy = jest.fn();
-
       await user.save();
-      const count1 = await user.nextCount(spy);
+      const count1 = await user.nextCount();
       const reset = await user.resetCount();
-      const count2 = await user.nextCount(spy);
+      const count2 = await user.nextCount();
 
       expect(user._id).toBe(0);
       expect(count1).toBe(1);
       expect(reset).toBe(0);
       expect(count2).toBe(0);
-      // Act
-      // async.series(
-      //   {
-      //     user(cb) {
-      //       user.save(cb);
-      //     },
-      //     count1(cb) {
-      //       user.nextCount(cb);
-      //     },
-      //     reset(cb) {
-      //       user.resetCount(cb);
-      //     },
-      //     count2(cb) {
-      //       user.nextCount(cb);
-      //     },
-      //   },
-      //   assert
-      // );
-      //
-      // // Assert
-      // function assert(err, results) {
-      //   should.not.exist(err);
-      //
-      //   // jest
-      //   // expect(err).toBeNull();
-      //   // expect(results.user[0]).toHaveProperty('_id', 0);
-      //   // expect(results.count1).toBe(1);
-      //   // expect(results.reset).toBe(0);
-      //   // expect(results.count2).toBe(0);
-      //
-      //   results.user[0].should.have.property('_id', 0);
-      //   results.count1.should.equal(1);
-      //   results.reset.should.equal(0);
-      //   results.count2.should.equal(0);
-      //   done();
-      // }
     });
 
     describe('with string field and output filter', () => {
@@ -323,9 +282,7 @@ describe('mongoose-auto-increment', () => {
         userSchema.plugin(autoIncrement, {
           model: 'User',
           field: 'orderNumber',
-          outputFilter(value) {
-            return `R${value}`;
-          },
+          outputFilter: value => value * 100,
         });
         const User = connection.model('User', userSchema);
         await User.ensureIndexes();
@@ -341,7 +298,7 @@ describe('mongoose-auto-increment', () => {
     });
 
     describe('with incrementor groups', () => {
-      it.skip('return the next count for the model, field, and groupingField', async () => {
+      it('return the next count for the model, field, and groupingField', async () => {
         const userSchema = new mongoose.Schema({
           name: String,
           dept: String,
@@ -355,37 +312,19 @@ describe('mongoose-auto-increment', () => {
         await User.ensureIndexes();
 
         const user1 = new User({ name: 'Charlie', dept: 'Support' });
-        // const user2 = new User({ name: 'Charlene', dept: 'Marketing' });
-        //
-        // const spy = jest.fn();
+        const user2 = new User({ name: 'Charlene', dept: 'Marketing' });
 
-        // const count1 = await user1.nextCount(spy);
-        // await user1.save();
-        // const count2 = await user1.nextCount(user1.dept, spy);
-        // await user2.save();
-        // const count3 = await user2.nextCount(user2.dept, spy);
+        const count1 = await user1.nextCount();
+        await user1.save();
+        const count2 = await user1.nextCount(user1.dept);
+        await user2.save();
+        const count3 = await user2.nextCount(user2.dept);
 
-        // expect(count1).toBe(0);
-        // expect(user1.userId).toBe(0);
-        // expect(count2).toBe(1);
-        // expect(user2.userId).toBe(0);
-        // expect(count3).toBe(1);
-
-        user1.nextCount((err1, count1) => {
-          expect(count1).toBe(0);
-          user1.save(() => {
-            user1.nextCount((err2, count2) => {
-              expect(count2).toBe(1);
-            });
-          });
-        });
-
-        // user2.save((err1, u) => {
-        //   expect(u.userId).toBe(0);
-        //   user2.nextCount((err, count) => {
-        //     expect(count).toBe(1);
-        //   });
-        // });
+        expect(count1).toBe(0);
+        expect(user1.userId).toBe(0);
+        expect(count2).toBe(1);
+        expect(user2.userId).toBe(0);
+        expect(count3).toBe(1);
       });
     });
   });
