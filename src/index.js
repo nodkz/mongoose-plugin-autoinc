@@ -75,25 +75,28 @@ async function createCounterIfNotExist(
   IC: IdentityCounterModel,
   settings: AutoIncSettings,
   doc: MongooseDocument
-) {
-  const existedCounter = await IC.findOne({
+): Promise<IdentityCounterDoc> {
+  let existedCounter: IdentityCounterDoc = (await IC.findOne({
     model: settings.model,
     field: settings.field,
     groupingField: doc.get(settings.groupingField) || '',
-  }).exec();
+  }).exec(): any);
 
   if (!existedCounter) {
     // If no counter exists then create one and save it.
-    await IC.create({
+    existedCounter = (new IC({
       model: settings.model,
       field: settings.field,
       groupingField: doc.get(settings.groupingField) || '',
       count: settings.startAt - settings.incrementBy,
-    });
+    }): any);
+    await existedCounter.save();
   }
+
+  return (existedCounter: any);
 }
 
-async function save(
+async function preSave(
   IC: IdentityCounterModel,
   settings: AutoIncSettings,
   doc: MongooseDocument,
@@ -156,7 +159,7 @@ async function save(
     next();
   } catch (err) {
     if (err.name === 'MongoError' && err.code === 11000) {
-      setTimeout(() => save(IC, settings, doc, next), 5);
+      setTimeout(() => preSave(IC, settings, doc, next), 5);
     } else {
       next(err);
     }
@@ -283,17 +286,17 @@ export function autoIncrement(
   });
 
   // Every time documents in this schema are saved, run this logic.
-  schema.pre('validate', async function preValidate(next: Function) {
+  schema.pre('validate', async function(next: Function) {
     // Get reference to the document being saved.
     const doc: MongooseDocument = this;
     // $FlowFixMe
-    const ranOnce = doc.__maiRanOnce === true;
+    const alreadyGetId = doc.__maiRanOnce === true;
 
     // Only do this if it is a new document & the field doesn't have
     // a value set (see http://mongoosejs.com/docs/api.html#document_Document-isNew)
-    if ((doc.isNew && ranOnce === false) || settings.migrate) {
+    if ((doc.isNew && !alreadyGetId) || settings.migrate) {
       const IC = getIC(doc.collection.conn);
-      save(IC, settings, doc, next);
+      preSave(IC, settings, doc, next);
     } else {
       // If the document does not have the field we're interested in or that field isn't a number AND the user did
       // not specify that we should increment on updates, then just continue the save without any increment logic.

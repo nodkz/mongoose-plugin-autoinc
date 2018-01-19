@@ -68,7 +68,7 @@ type SchemaOpts<Doc> = {
   typeKey?: string,
   useNestedStrict?: boolean,
   validateBeforeSave?: boolean,
-  versionKey?: string,
+  versionKey?: string | false,
   timestamps?:
     | boolean
     | {
@@ -509,9 +509,9 @@ declare module "mongoose" {
     Types: Mongoose$Types,
     Promise: any,
     model: $PropertyType<Mongoose$Connection, "model">,
-    createConnection(uri?: string): Mongoose$Connection,
+    createConnection(uri: string, options?: Object): Mongoose$Connection,
     set: (key: string, value: string | Function | boolean) => void,
-    connect: Function,
+    connect: (uri: string, options?: Object) => void,
     connection: Mongoose$Connection,
     connections: Mongoose$Connection[],
     Query: typeof Mongoose$Query,
