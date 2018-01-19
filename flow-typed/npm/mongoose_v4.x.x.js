@@ -1,6 +1,40 @@
-import mongoose from "mongoose";
+/*** FIX broken globals import 'bson' (((( ***/
+// import 'bson';
+declare class bson$ObjectId {
+  constructor(id?: string | number | bson$ObjectId): this;
+  generationTime: number;
+  static createFromHexString(hexString: string): bson$ObjectId;
+  static createFromTime(time: number): bson$ObjectId;
+  static isValid(id?: string | number | bson$ObjectId | null | void): boolean;
+  equals(otherID: bson$ObjectId): boolean;
+  generate(time?: number): string;
+  getTimestamp(): Date;
+  toHexString(): string;
+  toString(): string;
+  inspect(): string;
+  toJSON(): string;
+}
+declare class bson$Decimal128 {
+  constructor(bytes: Buffer): this;
+  static fromString(string: string): bson$Decimal128;
+  toString(): string;
+  toJSON(): { $numberDecimal: string };
+}
+/*** end FIX broken globals import 'bson' (((( ***/
 
-type MongoId = BSONObjectId | string | number;
+type MongoId = bson$ObjectId | string | number;
+
+type Mongoose$Types = {|
+  ObjectId: Class<bson$ObjectId>,
+  Mixed: Object,
+  Embedded: Object,
+  Document: Object,
+  DocumentArray: Object,
+  Subdocument: Object,
+  Array: Object,
+  Buffer: Object,
+  Decimal128: Class<bson$Decimal128>
+|};
 
 type SchemaFields = {
   [fieldName: string]: any
@@ -55,32 +89,6 @@ type IndexOpts = {|
   name?: string,
   default_language?: string,
   weights?: Object
-|};
-
-declare class BSONObjectId {
-  constructor(id?: string | number | BSONObjectId): BSONObjectId;
-  toHexString(): string;
-  toString(): string;
-  toJSON(): string;
-  inspect(): string;
-  equals(otherId: string | number | BSONObjectId): boolean;
-  getTimestamp(): Date;
-
-  static createFromTime(time: number): BSONObjectId;
-  static createFromHexString(str: string): BSONObjectId;
-  static isValid(id: string | number | BSONObjectId): boolean;
-}
-
-type Mongoose$Types = {|
-  ObjectId: Class<BSONObjectId>,
-  Mixed: Object,
-  Embedded: Object,
-  Document: Object,
-  DocumentArray: Object,
-  Subdocument: Object,
-  Array: Object,
-  Buffer: Object,
-  Decimal128: Object
 |};
 
 type Mongoose$SchemaMethods = {
@@ -150,8 +158,8 @@ declare class Mongoose$Schema<Doc> {
   requiredPaths(invalidate?: boolean): string[];
   method(method: string, fn: Function): this;
   method(methods: { [method: string]: Function }): this;
-  static(method: string, fn: Function): this;
-  static(methods: { [method: string]: Function }): this;
+  static (method: string, fn: Function): this;
+  static (methods: { [method: string]: Function }): this;
   virtual(name: string, opts?: Object): VirtualType;
   virtualpath(name: string): ?VirtualType;
   indexTypes(): string[];
@@ -220,7 +228,7 @@ declare class Mongoose$Document {
     data: Object,
     options?: Object
   ): Mongoose$Query<?this, this>;
-  static count(criteria: Object): Promise<number>;
+  static count(criteria?: Object): Promise<number>;
   static remove(criteria: Object): Promise<mixed>;
   static update(
     criteria: Object,
@@ -254,9 +262,10 @@ declare class Mongoose$Document {
   static schema: Mongoose$Schema<this>;
   static on(type: string, cb: Function): void;
 
+  collection: Mongoose$Collection;
   constructor(data?: $Shape<this>): this;
   id: string | number;
-  _id: MongoId;
+  _id: bson$ObjectId | string | number;
   __v?: number;
   save(): Promise<this>;
   update(update: Object, options?: Object): Promise<UpdateResult>;
@@ -346,7 +355,7 @@ declare class Mongoose$Query<Result, Doc> extends Promise<Result> {
   batchSize(n: number): Mongoose$Query<Result, Doc>;
   collation(value: Object): Mongoose$Query<Result, Doc>;
   comment(val: string): Mongoose$Query<Result, Doc>;
-  cursor(opts: Object): Mongoose$QueryCursor<Doc>;
+  cursor(opts?: Object): Mongoose$QueryCursor<Doc>;
   deleteMany(criteria?: Object): Mongoose$Query<any, Doc>;
   deleteOne(criteria?: Object): Mongoose$Query<any, Doc>;
   distinct(field: string, criteria?: Object): Mongoose$Query<Result, Doc>;
@@ -407,7 +416,7 @@ declare class Mongoose$Query<Result, Doc> extends Promise<Result> {
 
 declare class Mongoose$QueryCursor<Doc> {
   on(type: "data" | "end" | string, cb: Function): void;
-  next(cb: (err: Error, doc: Doc) => void): void;
+  next(cb?: (err: Error, doc: Doc) => void): Promise<?Doc>;
 }
 
 declare class Mongoose$QueryStream {
@@ -485,7 +494,8 @@ declare class Mongoose$Connection {
 declare module "mongoose" {
   declare export type MongooseConnection = Mongoose$Connection;
   declare export type MongoId = MongoId;
-  declare export type BSONObjectId = BSONObjectId;
+  declare export type BSONObjectId = bson$ObjectId;
+  declare export type ObjectId = bson$ObjectId;
   declare export type MongooseQuery<Result, Doc> = Mongoose$Query<Result, Doc>;
   declare export type MongooseDocument = Mongoose$Document;
   declare export type MongooseModel = typeof Mongoose$Document;
