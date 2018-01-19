@@ -1,6 +1,6 @@
 {
   "name": "mongoose-plugin-autoinc",
-  "version": "0.0.0-semantically-released",
+  "version": "0.0.0-development",
   "description": "This plugin allows you to auto-increment any field on any mongoose schema that you wish (forked mongoose-auto-increment in 2018).",
   "files": [
     "lib"
@@ -74,6 +74,6 @@
     "tscheck": "tsc",
     "flow": "./node_modules/.bin/flow",
     "test": "npm run coverage && npm run lint && npm run flow",
-    "semantic-release": "semantic-release"
+    "semantic-release": "semantic-release pre && npm publish && semantic-release post"
   }
 }

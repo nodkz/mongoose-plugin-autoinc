@@ -9,7 +9,7 @@
 
 This is a fork of [mongoose-auto-increment](https://github.com/chevex-archived/mongoose-auto-increment) which has not been maintained in a while. This fork addresses the following issues:
 - fix error `'required' is not valid for an index specification` for Mongoose 4 and above
-- does not require established connection for initialization
+- does not require established connection for initialization (deprecate `initialize()` method)
 - include Flowtype and Typescript declarations
 
 ## Getting Started
@@ -26,8 +26,6 @@ import mongoose from 'mongoose';
 import autoIncrement from 'mongoose-auto-increment';
 
 const connection = mongoose.createConnection("mongodb://localhost/myDatabase");
-
-autoIncrement.initialize(connection);
 
 const BookSchema = new mongoose.Schema({
     author: { type: Schema.Types.ObjectId, ref: 'Author' },
