@@ -4,21 +4,30 @@ import mongoose, {
   type MongooseConnection,
   type MongooseSchema,
   type MongooseDocument,
+  type MongooseModel,
 } from 'mongoose';
 
 export type AutoIncSettings = {|
-  migrate: boolean, // If this is to be run on a migration for existing records. Only set this on migration processes.
-  model: ?string, // The model to configure the plugin for.
+  migrate?: boolean, // If this is to be run on a migration for existing records. Only set this on migration processes.
+  model: string, // The model to configure the plugin for.
   field: string, // The field the plugin should track.
   groupingField: string, // The field by which to group documents, allowing for each grouping to be incremented separately.
   startAt: number, // The number the count should start at.
   incrementBy: number, // The number by which to increment the count each time.
-  unique: boolean, // Should we create a unique index for the field,
+  unique?: boolean, // Should we create a unique index for the field,
   outputFilter?: (count: number) => number, // function that modifies the output of the counter.
 |};
 export type AutoIncOptions = string | $Shape<AutoIncSettings>;
 
-let IdentityCounter;
+declare class IdentityCounterDoc extends Mongoose$Document {
+  model: string;
+  field: string;
+  groupingField: string;
+  count: number;
+  constructor(data?: $Shape<this>): IdentityCounterModel;
+}
+
+export type IdentityCounterModel = typeof IdentityCounterDoc;
 
 const counterSchema = new mongoose.Schema({
   model: { type: String, required: true },
@@ -38,43 +47,65 @@ counterSchema.index(
   }
 );
 
+export function initialize(): void {
+  console.log(
+    `MongooseAutoIncrement.initialize() method is depricated. ` +
+      `Just remove this method, it not required anymore.`
+  );
+}
+
 // Initialize plugin by creating counter collection in database.
-export function initialize(connection: MongooseConnection): void {
+function initIdentityCounter(connection: MongooseConnection): IdentityCounterModel {
+  let identityCounter;
+
   try {
-    IdentityCounter = connection.model('IdentityCounter');
+    identityCounter = connection.model('IdentityCounter');
   } catch (ex) {
     if (ex.name === 'MissingSchemaError') {
       // Create model using new schema.
-      IdentityCounter = connection.model('IdentityCounter', counterSchema);
+      identityCounter = connection.model('IdentityCounter', counterSchema);
     } else {
       throw ex;
     }
   }
+  return identityCounter;
 }
 
-async function save(settings: AutoIncSettings, doc: MongooseDocument, next: Function) {
-  try {
-    let counter = await IdentityCounter.findOne({
+async function createCounterIfNotExist(
+  IC: IdentityCounterModel,
+  settings: AutoIncSettings,
+  doc: MongooseDocument
+) {
+  const existedCounter = await IC.findOne({
+    model: settings.model,
+    field: settings.field,
+    groupingField: doc.get(settings.groupingField) || '',
+  }).exec();
+
+  if (!existedCounter) {
+    // If no counter exists then create one and save it.
+    await IC.create({
       model: settings.model,
       field: settings.field,
       groupingField: doc.get(settings.groupingField) || '',
-    }).exec();
+      count: settings.startAt - settings.incrementBy,
+    });
+  }
+}
 
-    if (!counter) {
-      // If no counter exists then create one and save it.
-      counter = new IdentityCounter({
-        model: settings.model,
-        field: settings.field,
-        groupingField: doc.get(settings.groupingField) || '',
-        count: settings.startAt - settings.incrementBy,
-      });
-      counter = await counter.save();
-    }
+async function save(
+  IC: IdentityCounterModel,
+  settings: AutoIncSettings,
+  doc: MongooseDocument,
+  next: Function
+) {
+  try {
+    await createCounterIfNotExist(IC, settings, doc);
 
     if (typeof doc.get(settings.field) === 'number') {
       // check that a number has already been provided, and update the counter
       // to that number if it is greater than the current count
-      await IdentityCounter.findOneAndUpdate(
+      await IC.findOneAndUpdate(
         {
           model: settings.model,
           field: settings.field,
@@ -87,7 +118,8 @@ async function save(settings: AutoIncSettings, doc: MongooseDocument, next: Func
       ).exec();
     } else {
       // Find the counter collection entry for this model and field and update it.
-      let { count } = await IdentityCounter.findOneAndUpdate(
+      // Should be done via atomic mongodb operation, cause parallel processes may change value
+      const updatedCounter = await IC.findOneAndUpdate(
         {
           model: settings.model,
           field: settings.field,
@@ -102,6 +134,12 @@ async function save(settings: AutoIncSettings, doc: MongooseDocument, next: Func
           new: true,
         }
       ).exec();
+
+      if (!updatedCounter) {
+        throw new Error(`MongooseAutoInc cannot update counter for ${settings.model}`);
+      }
+
+      let { count } = updatedCounter;
 
       // if an output filter was provided, apply it.
       if (typeof settings.outputFilter === 'function') {
@@ -118,7 +156,7 @@ async function save(settings: AutoIncSettings, doc: MongooseDocument, next: Func
     next();
   } catch (err) {
     if (err.name === 'MongoError' && err.code === 11000) {
-      setTimeout(() => save(settings, doc, next), 5);
+      setTimeout(() => save(IC, settings, doc, next), 5);
     } else {
       next(err);
     }
@@ -126,25 +164,27 @@ async function save(settings: AutoIncSettings, doc: MongooseDocument, next: Func
 }
 
 // Declare a function to get the next counter for the model/schema.
-export async function nextCount(
+async function nextCount(
+  IC: IdentityCounterModel,
   settings: AutoIncSettings,
   groupingFieldValue?: string
 ): Promise<number> {
-  const counter = await IdentityCounter.findOne({
+  const counter = await IC.findOne({
     model: settings.model,
     field: settings.field,
     groupingField: groupingFieldValue || '',
   }).exec();
 
-  return counter === null ? settings.startAt : counter.count + settings.incrementBy;
+  return !counter ? settings.startAt : counter.count + settings.incrementBy;
 }
 
 // Declare a function to reset counter at the start value - increment value.
-export async function resetCount(
+async function resetCount(
+  IC: IdentityCounterModel,
   settings: AutoIncSettings,
   groupingFieldValue?: string
 ): Promise<number> {
-  await IdentityCounter.findOneAndUpdate(
+  await IC.findOneAndUpdate(
     { model: settings.model, field: settings.field, groupingField: groupingFieldValue || '' },
     { count: settings.startAt - settings.incrementBy },
     { new: true } // new: true specifies that the callback should get the updated counter.
@@ -154,26 +194,31 @@ export async function resetCount(
 }
 
 // The function to use when invoking the plugin on a custom schema.
-export function autoIncrement(schema: MongooseSchema<MongooseDocument>, options: AutoIncOptions) {
+export function autoIncrement(
+  schema: MongooseSchema<MongooseDocument>,
+  options: AutoIncOptions
+): void {
   const compoundIndex = {};
 
-  // Default settings and plugin scope variables.
-  let settings: AutoIncSettings = {
-    migrate: false, // If this is to be run on a migration for existing records. Only set this on migration processes.
-    model: null, // The model to configure the plugin for.
-    field: '_id', // The field the plugin should track.
-    groupingField: '', // The field by which to group documents, allowing for each grouping to be incremented separately.
-    startAt: 0, // The number the count should start at.
-    incrementBy: 1, // The number by which to increment the count each time.
-    unique: true, // Should we create a unique index for the field,
-    outputFilter: undefined, // function that modifies the output of the counter.
-  };
-
-  // If we don't have reference to the counterSchema or the IdentityCounter model
-  // then the plugin was most likely not initialized properly so throw an error.
-  if (!counterSchema || !IdentityCounter) {
-    throw new Error('mongoose-auto-increment has not been initialized');
+  let _IC_: IdentityCounterModel;
+  function getIC(connection: MongooseConnection) {
+    if (!_IC_) {
+      _IC_ = initIdentityCounter(connection);
+    }
+    return _IC_;
   }
+
+  // Default settings and plugin scope variables.
+  let settings: $Shape<AutoIncSettings> = {
+    migrate: false,
+    model: undefined,
+    field: '_id',
+    groupingField: '',
+    startAt: 0,
+    incrementBy: 1,
+    unique: true,
+    outputFilter: undefined,
+  };
 
   switch (typeof options) {
     // If string, the user chose to pass in just the model name.
@@ -212,33 +257,43 @@ export function autoIncrement(schema: MongooseSchema<MongooseDocument>, options:
   }
 
   // Add nextCount as both a method on documents and a static on the schema for convenience.
-  schema.method('nextCount', (groupingFieldValue?: string) =>
-    nextCount(settings, groupingFieldValue)
-  );
+  schema.method('nextCount', function(groupingFieldValue?: string) {
+    const doc: MongooseDocument = this;
+    const IC = getIC(doc.collection.conn);
+    return nextCount(IC, settings, groupingFieldValue);
+  });
   // $FlowFixMe
-  schema.static('nextCount', (groupingFieldValue?: string) =>
-    nextCount(settings, groupingFieldValue)
-  );
+  schema.static('nextCount', function(groupingFieldValue?: string) {
+    const model: MongooseModel = this;
+    const IC = getIC(model.collection.conn);
+    return nextCount(IC, settings, groupingFieldValue);
+  });
 
   // Add resetCount as both a method on documents and a static on the schema for convenience.
-  schema.method('resetCount', (groupingFieldValue?: string) =>
-    resetCount(settings, groupingFieldValue)
-  );
+  schema.method('resetCount', function(groupingFieldValue?: string) {
+    const doc: MongooseDocument = this;
+    const IC = getIC(doc.collection.conn);
+    return resetCount(IC, settings, groupingFieldValue);
+  });
   // $FlowFixMe
-  schema.static('resetCount', (groupingFieldValue?: string) =>
-    resetCount(settings, groupingFieldValue)
-  );
+  schema.static('resetCount', function(groupingFieldValue?: string) {
+    const model: MongooseModel = this;
+    const IC = getIC(model.collection.conn);
+    return resetCount(IC, settings, groupingFieldValue);
+  });
 
   // Every time documents in this schema are saved, run this logic.
   schema.pre('validate', async function preValidate(next: Function) {
     // Get reference to the document being saved.
-    const doc = this;
+    const doc: MongooseDocument = this;
+    // $FlowFixMe
     const ranOnce = doc.__maiRanOnce === true;
 
     // Only do this if it is a new document & the field doesn't have
     // a value set (see http://mongoosejs.com/docs/api.html#document_Document-isNew)
     if ((doc.isNew && ranOnce === false) || settings.migrate) {
-      save(settings, doc, next);
+      const IC = getIC(doc.collection.conn);
+      save(IC, settings, doc, next);
     } else {
       // If the document does not have the field we're interested in or that field isn't a number AND the user did
       // not specify that we should increment on updates, then just continue the save without any increment logic.

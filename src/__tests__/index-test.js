@@ -2,7 +2,7 @@
 
 import mongoose from 'mongoose';
 import MongodbMemoryServer from 'mongodb-memory-server';
-import { initialize, autoIncrement } from '..';
+import { autoIncrement } from '..';
 
 let connection;
 // May require additional time for downloading MongoDB binaries
@@ -18,12 +18,6 @@ beforeAll(async () => {
 
   connection = mongoose.createConnection(mongoUrl);
   connection.on('error', (...args) => console.error(...args));
-  await new Promise(resolve => {
-    connection.once('open', () => {
-      initialize(connection);
-      resolve();
-    });
-  });
 });
 
 afterAll(() => {
@@ -45,7 +39,6 @@ afterEach(async () => {
       .model('IdentityCounter')
       .collection.drop()
       .catch(() => {});
-    // delete connection.models.IdentityCounter;
   }
 });
 
@@ -166,7 +159,6 @@ describe('mongoose-auto-increment', () => {
     await user1.save();
     await user2.save();
 
-    // FIXME: wtf is this?
     expect(() => {
       userSchema.plugin(autoIncrement);
     }).toThrowError('model must be set');
@@ -224,8 +216,8 @@ describe('mongoose-auto-increment', () => {
     });
   });
 
-  describe('helper function', () => {
-    it('nextCount should return the next count for the model and field', async () => {
+  describe('nextCount() helper function', () => {
+    it('nextCount should return the next count from document', async () => {
       const userSchema = new mongoose.Schema({
         name: String,
         dept: String,
@@ -250,7 +242,63 @@ describe('mongoose-auto-increment', () => {
       expect(count3).toBe(2);
     });
 
-    it('resetCount should cause the count to reset as if there were no documents yet.', async () => {
+    it('nextCount should return the next count from model', async () => {
+      const userSchema = new mongoose.Schema({
+        name: String,
+        dept: String,
+      });
+      userSchema.plugin(autoIncrement, 'User');
+      const User = connection.model('User', userSchema);
+      await User.ensureIndexes();
+
+      const user1 = new User({ name: 'Charlie', dept: 'Support' });
+      const user2 = new User({ name: 'Charlene', dept: 'Marketing' });
+
+      const count1 = await User.nextCount();
+      await user1.save();
+      const count2 = await User.nextCount();
+      await user2.save();
+      const count3 = await User.nextCount();
+
+      expect(count1).toBe(0);
+      expect(user1._id).toBe(0);
+      expect(count2).toBe(1);
+      expect(user2._id).toBe(1);
+      expect(count3).toBe(2);
+    });
+
+    it('with incrementor groups return the next count', async () => {
+      const userSchema = new mongoose.Schema({
+        name: String,
+        dept: String,
+      });
+      userSchema.plugin(autoIncrement, {
+        model: 'User',
+        field: 'userId',
+        groupingField: 'dept',
+      });
+      const User = connection.model('User', userSchema);
+      await User.ensureIndexes();
+
+      const user1 = new User({ name: 'Charlie', dept: 'Support' });
+      const user2 = new User({ name: 'Charlene', dept: 'Marketing' });
+
+      const count1 = await user1.nextCount();
+      await user1.save();
+      const count2 = await user1.nextCount(user1.dept);
+      await user2.save();
+      const count3 = await user2.nextCount(user2.dept);
+
+      expect(count1).toBe(0);
+      expect(user1.userId).toBe(0);
+      expect(count2).toBe(1);
+      expect(user2.userId).toBe(0);
+      expect(count3).toBe(1);
+    });
+  });
+
+  describe('resetCount() helper function', () => {
+    it('should reset count via doc method', async () => {
       const userSchema = new mongoose.Schema({
         name: String,
         dept: String,
@@ -262,70 +310,59 @@ describe('mongoose-auto-increment', () => {
       const user = new User({ name: 'Charlie', dept: 'Support' });
 
       await user.save();
-      const count1 = await user.nextCount();
+      const nextCount1 = await user.nextCount();
       const reset = await user.resetCount();
-      const count2 = await user.nextCount();
+      const nextCount2 = await user.nextCount();
 
       expect(user._id).toBe(0);
-      expect(count1).toBe(1);
+      expect(nextCount1).toBe(1);
       expect(reset).toBe(0);
-      expect(count2).toBe(0);
+      expect(nextCount2).toBe(0);
     });
 
-    describe('with string field and output filter', () => {
-      it('increment the counter value only once', async () => {
-        const userSchema = new mongoose.Schema({
-          orderNumber: String,
-          name: String,
-          dept: String,
-        });
-        userSchema.plugin(autoIncrement, {
-          model: 'User',
-          field: 'orderNumber',
-          outputFilter: value => value * 100,
-        });
-        const User = connection.model('User', userSchema);
-        await User.ensureIndexes();
-
-        const user1 = new User({ name: 'Charlie', dept: 'Support' });
-
-        await user1.validate();
-        const initialId = user1.orderNumber;
-        await user1.validate();
-        await user1.save();
-        expect(user1.orderNumber).toBe(initialId);
+    it('should reset count via Model method', async () => {
+      const userSchema = new mongoose.Schema({
+        name: String,
+        dept: String,
       });
+      userSchema.plugin(autoIncrement, 'User');
+      const User = connection.model('User', userSchema);
+      await User.ensureIndexes();
+
+      const user = new User({ name: 'Charlie', dept: 'Support' });
+
+      await user.save();
+      const nextCount1 = await user.nextCount();
+      const reset = await User.resetCount();
+      const nextCount2 = await user.nextCount();
+
+      expect(user._id).toBe(0);
+      expect(nextCount1).toBe(1);
+      expect(reset).toBe(0);
+      expect(nextCount2).toBe(0);
     });
+  });
 
-    describe('with incrementor groups', () => {
-      it('return the next count for the model, field, and groupingField', async () => {
-        const userSchema = new mongoose.Schema({
-          name: String,
-          dept: String,
-        });
-        userSchema.plugin(autoIncrement, {
-          model: 'User',
-          field: 'userId',
-          groupingField: 'dept',
-        });
-        const User = connection.model('User', userSchema);
-        await User.ensureIndexes();
-
-        const user1 = new User({ name: 'Charlie', dept: 'Support' });
-        const user2 = new User({ name: 'Charlene', dept: 'Marketing' });
-
-        const count1 = await user1.nextCount();
-        await user1.save();
-        const count2 = await user1.nextCount(user1.dept);
-        await user2.save();
-        const count3 = await user2.nextCount(user2.dept);
-
-        expect(count1).toBe(0);
-        expect(user1.userId).toBe(0);
-        expect(count2).toBe(1);
-        expect(user2.userId).toBe(0);
-        expect(count3).toBe(1);
-      });
+  it('with string field and output filter increment the counter value only once', async () => {
+    const userSchema = new mongoose.Schema({
+      orderNumber: String,
+      name: String,
+      dept: String,
     });
+    userSchema.plugin(autoIncrement, {
+      model: 'User',
+      field: 'orderNumber',
+      outputFilter: value => value * 100,
+    });
+    const User = connection.model('User', userSchema);
+    await User.ensureIndexes();
+
+    const user1 = new User({ name: 'Charlie', dept: 'Support' });
+
+    await user1.validate();
+    const initialId = user1.orderNumber;
+    await user1.validate();
+    await user1.save();
+    expect(user1.orderNumber).toBe(initialId);
   });
 });
