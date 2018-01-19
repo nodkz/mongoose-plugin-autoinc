@@ -1,14 +1,14 @@
 {
   "name": "mongoose-plugin-autoinc",
   "version": "0.0.0-semantically-released",
-  "description": "This plugin allows you to auto-increment any field on any mongoose schema that you wish.",
+  "description": "This plugin allows you to auto-increment any field on any mongoose schema that you wish (forked mongoose-auto-increment in 2018).",
   "files": [
     "lib"
   ],
   "main": "lib/index.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/graphql-compose/mongoose-plugin-autoinc.git"
+    "url": "https://github.com/nodkz/mongoose-plugin-autoinc.git"
   },
   "keywords": [
     "mongoose",
@@ -18,36 +18,36 @@
   ],
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/graphql-compose/mongoose-plugin-autoinc/issues"
+    "url": "https://github.com/nodkz/mongoose-plugin-autoinc/issues"
   },
-  "homepage": "https://github.com/graphql-compose/mongoose-plugin-autoinc",
+  "homepage": "https://github.com/nodkz/mongoose-plugin-autoinc",
   "peerDependencies": {
     "mongoose": ">=4.0.0"
   },
   "devDependencies": {
     "async": "^2.6.0",
     "babel-cli": "^6.26.0",
-    "babel-eslint": "^8.0.2",
-    "babel-jest": "^21.2.0",
+    "babel-eslint": "^8.2.1",
+    "babel-jest": "^22.1.0",
     "babel-plugin-transform-flow-strip-types": "^6.22.0",
     "babel-plugin-transform-object-rest-spread": "^6.13.0",
     "babel-plugin-transform-runtime": "^6.23.0",
     "babel-preset-env": "^1.6.1",
     "bases": "^0.2.1",
     "cz-conventional-changelog": "^2.1.0",
-    "eslint": "^4.11.0",
+    "eslint": "^4.15.0",
     "eslint-config-airbnb-base": "^12.1.0",
-    "eslint-config-prettier": "^2.7.0",
-    "eslint-plugin-flowtype": "^2.39.1",
+    "eslint-config-prettier": "^2.9.0",
+    "eslint-plugin-flowtype": "^2.41.0",
     "eslint-plugin-import": "^2.8.0",
-    "eslint-plugin-prettier": "^2.3.1",
-    "flow-bin": "^0.59.0",
-    "jest": "^21.2.1",
-    "mongodb-memory-server": "^1.6.3",
+    "eslint-plugin-prettier": "^2.5.0",
+    "flow-bin": "^0.63.1",
+    "jest": "^22.1.3",
+    "mongodb-memory-server": "^1.6.4",
     "mongoose": "^4.13.3",
-    "prettier": "^1.8.2",
+    "prettier": "^1.10.2",
     "rimraf": "^2.6.2",
-    "semantic-release": "^8.2.0"
+    "semantic-release": "^12.2.2"
   },
   "config": {
     "commitizen": {
@@ -63,11 +63,15 @@
     "build": "npm run build-cjs && npm run build-flow",
     "build-cjs": "rimraf lib && babel src --ignore __tests__,__mocks__ -d lib",
     "build-flow": "find ./src -name '*.js' -not -path '*/__*' | while read filepath; do cp $filepath `echo $filepath | sed 's/\\/src\\//\\/lib\\//g'`.flow; done",
+    "build-ts": "find ./src -name '*.d.ts' -not -path '*/__*' | while read filepath; do cp $filepath `echo $filepath | sed 's/\\/src\\//\\/lib\\//g'`; done",
     "watch": "jest --watch",
     "coverage": "jest --coverage --maxWorkers 2",
-    "lint": "eslint --ext .js ./src",
+    "lint": "npm run eslint && npm run tslint",
+    "tslint": "tslint -p . \"src/**/*.d.ts\"",
+    "eslint": "eslint --ext .js ./src",
+    "tscheck": "tsc",
     "flow": "./node_modules/.bin/flow",
     "test": "npm run coverage && npm run lint && npm run flow",
-    "semantic-release": "semantic-release pre && npm publish && semantic-release post"
+    "semantic-release": "semantic-release"
   }
 }
