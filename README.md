@@ -7,10 +7,12 @@
 
 ---
 
-This is a fork of [mongoose-auto-increment](https://github.com/chevex-archived/mongoose-auto-increment) which has not been maintained in a while. This fork addresses the following issues:
-- fix error `'required' is not valid for an index specification` for Mongoose 4 and Mongoose 5
-- does not require established connection for initialization (deprecate `initialize()` method)
+This is a fork of [mongoose-auto-increment](https://github.com/chevex-archived/mongoose-auto-increment) which has not been maintained in a while. Also used fixes and changes from [dashride fork](https://github.com/Dashride/mongoose-auto-increment). This fork addresses the following issues:
+- fix error `'required' is not valid for an index specification` for Mongoose 4
+- does not require established connection for initialization **(deprecate `initialize()` method)**
 - include Flowtype and Typescript declarations
+- tested with Mongoose 5
+- setup automatic package publishing on PR merge with Travis CI and [sematic-release](https://github.com/semantic-release/semantic-release)
 
 ## Getting Started
 
