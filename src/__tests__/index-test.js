@@ -22,6 +22,7 @@ beforeAll(async () => {
       reconnectInterval: 100,
       reconnectTries: Number.MAX_VALUE,
     })
+    // $FlowFixMe
     .catch(() => {});
   // connection.on('error', (...args) => console.error(...args));
 });
