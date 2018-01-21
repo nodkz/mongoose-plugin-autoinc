@@ -352,7 +352,7 @@ describe('mongoose-auto-increment', () => {
 
   it('with string field and output filter increment the counter value only once', async () => {
     const userSchema = new mongoose.Schema({
-      orderNumber: String,
+      orderNumber: Number,
       name: String,
       dept: String,
     });
@@ -371,5 +371,49 @@ describe('mongoose-auto-increment', () => {
     await user1.validate();
     await user1.save();
     expect(user1.orderNumber).toBe(initialId);
+  });
+
+  it('should fix old counter record without `groupingField`', async () => {
+    const _id = new mongoose.Types.ObjectId('100000000000000000000000');
+    const icCollectoion = connection.collection('identitycounters');
+    await icCollectoion.ensureIndex(
+      {
+        field: 1,
+        groupingField: 1,
+        model: 1,
+      },
+      {
+        unique: true,
+      }
+    );
+    await icCollectoion.insert({
+      _id,
+      model: 'User',
+      field: 'orderNumber',
+      count: 79,
+    });
+
+    expect(await icCollectoion.find().toArray()).toEqual([
+      { _id, count: 79, field: 'orderNumber', model: 'User' },
+    ]);
+
+    const userSchema = new mongoose.Schema({
+      orderNumber: Number,
+      name: String,
+      dept: String,
+    });
+    userSchema.plugin(autoIncrement, {
+      model: 'User',
+      field: 'orderNumber',
+    });
+    const User = connection.model('User', userSchema);
+    await User.ensureIndexes();
+
+    const user1 = new User({ name: 'Charlie', dept: 'Support' });
+    await user1.save();
+
+    expect(await icCollectoion.find().toArray()).toEqual([
+      { _id, count: 80, field: 'orderNumber', model: 'User', groupingField: '' },
+    ]);
   });
 });

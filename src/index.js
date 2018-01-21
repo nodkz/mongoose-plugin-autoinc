@@ -54,6 +54,10 @@ export function initialize(): void {
   );
 }
 
+function isMongoDuplicateError(e: any): boolean {
+  return e.name === 'MongoError' && e.code === 11000;
+}
+
 // Initialize plugin by creating counter collection in database.
 function initIdentityCounter(connection: MongooseConnection): IdentityCounterModel {
   let identityCounter;
@@ -76,20 +80,37 @@ async function createCounterIfNotExist(
   settings: AutoIncSettings,
   doc: MongooseDocument
 ): Promise<IdentityCounterDoc> {
+  const groupingField = doc.get(settings.groupingField) || '';
+
   let existedCounter: IdentityCounterDoc = (await IC.findOne({
     model: settings.model,
     field: settings.field,
-    groupingField: doc.get(settings.groupingField) || '',
+    groupingField,
   }).exec(): any);
+
+  // Check old record without `groupingField`,
+  // so let fix this record by adding this field
+  if (!existedCounter) {
+    existedCounter = (await IC.findOne({
+      model: settings.model,
+      field: settings.field,
+      groupingField: { $exists: false },
+    }): any);
+    if (existedCounter) {
+      existedCounter.groupingField = '';
+      await existedCounter.save();
+    }
+  }
 
   if (!existedCounter) {
     // If no counter exists then create one and save it.
     existedCounter = (new IC({
       model: settings.model,
       field: settings.field,
-      groupingField: doc.get(settings.groupingField) || '',
+      groupingField,
       count: settings.startAt - settings.incrementBy,
     }): any);
+
     await existedCounter.save();
   }
 
@@ -158,7 +179,7 @@ async function preSave(
 
     next();
   } catch (err) {
-    if (err.name === 'MongoError' && err.code === 11000) {
+    if (isMongoDuplicateError(err)) {
       setTimeout(() => preSave(IC, settings, doc, next), 5);
     } else {
       next(err);
