@@ -21,3 +21,8 @@ export type AutoIncOptions = string | AutoIncSettings;
 
 // The function to use when invoking the plugin on a custom schema.
 export function autoIncrement(schema: any, options: AutoIncOptions): void;
+
+export default function autoIncrement(schema: any, options: AutoIncOptions): void;
+
+// Alias for autoIncrement
+export function plugin(schema: any, options: AutoIncOptions): void;

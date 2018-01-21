@@ -18,14 +18,13 @@ This is a fork of [mongoose-auto-increment](https://github.com/chevex-archived/m
 
 > npm install mongoose-plugin-autoinc
 
-Once you have the plugin installed it is very simple to use. Just get reference to it, initialize it by passing in your
-mongoose connection and pass `autoIncrement.plugin` to the `plugin()` function on your schema.
+Once you have the plugin installed it is very simple to use. Just pass `autoIncrement` to the `plugin()` function on your schema.
 
 > Note: You only need to initialize MAI once.
 
 ````js
 import mongoose from 'mongoose';
-import autoIncrement from 'mongoose-auto-increment';
+import { autoIncrement } from 'mongoose-auto-increment';
 
 const connection = mongoose.createConnection("mongodb://localhost/myDatabase");
 
@@ -36,7 +35,7 @@ const BookSchema = new mongoose.Schema({
     publishDate: Date
 });
 
-BookSchema.plugin(autoIncrement.plugin, 'Book');
+BookSchema.plugin(autoIncrement, 'Book');
 const Book = connection.model('Book', BookSchema);
 ````
 
@@ -54,20 +53,20 @@ const BookSchema = new mongoose.Schema({
     publishDate: Date
 });
 
-BookSchema.plugin(autoIncrement.plugin, 'Book');
-AuthorSchema.plugin(autoIncrement.plugin, 'Author');
+BookSchema.plugin(autoIncrement, 'Book');
+AuthorSchema.plugin(autoIncrement, 'Author');
 ````
 
 ### Want a field other than `_id`?
 
 ````js
-BookSchema.plugin(autoIncrement.plugin, { model: 'Book', field: 'bookId' });
+BookSchema.plugin(autoIncrement, { model: 'Book', field: 'bookId' });
 ````
 
 ### Want that field to start at a different number than zero or increment by more than one?
 
 ````js
-BookSchema.plugin(autoIncrement.plugin, {
+BookSchema.plugin(autoIncrement, {
     model: 'Book',
     field: 'bookId',
     startAt: 100,
@@ -104,7 +103,7 @@ nextCount is both a static method on the model (`Book.nextCount(...)`) and an in
 ### Want to reset counter back to the start value?
 
 ````js
-BookSchema.plugin(autoIncrement.plugin, {
+BookSchema.plugin(autoIncrement, {
     model: 'Book',
     field: 'bookId',
     startAt: 100

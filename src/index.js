@@ -304,3 +304,9 @@ export function autoIncrement(
     }
   });
 }
+
+export function plugin(schema: MongooseSchema<MongooseDocument>, options: AutoIncOptions): void {
+  return autoIncrement(schema, options);
+}
+
+export default autoIncrement;
