@@ -16,8 +16,14 @@ beforeAll(async () => {
   mongoServer = new MongodbMemoryServer();
   const mongoUrl = await mongoServer.getConnectionString();
 
-  connection = mongoose.createConnection(mongoUrl);
-  connection.on('error', (...args) => console.error(...args));
+  connection = await mongoose
+    .createConnection(mongoUrl, {
+      autoReconnect: true,
+      reconnectInterval: 100,
+      reconnectTries: Number.MAX_VALUE,
+    })
+    .catch(() => {});
+  // connection.on('error', (...args) => console.error(...args));
 });
 
 afterAll(() => {

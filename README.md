@@ -8,7 +8,7 @@
 ---
 
 This is a fork of [mongoose-auto-increment](https://github.com/chevex-archived/mongoose-auto-increment) which has not been maintained in a while. This fork addresses the following issues:
-- fix error `'required' is not valid for an index specification` for Mongoose 4 and above
+- fix error `'required' is not valid for an index specification` for Mongoose 4 and Mongoose 5
 - does not require established connection for initialization (deprecate `initialize()` method)
 - include Flowtype and Typescript declarations
 
