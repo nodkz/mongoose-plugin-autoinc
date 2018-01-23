@@ -6,6 +6,7 @@
     "lib"
   ],
   "main": "lib/index.js",
+  "types": "lib/index.d.ts",
   "repository": {
     "type": "git",
     "url": "https://github.com/nodkz/mongoose-plugin-autoinc.git"
