@@ -1,3 +1,5 @@
+import { Schema } from 'mongoose';
+
 export type AutoIncSettings = {
   // If this is to be run on a migration for existing records. Only set this on migration processes.
   migrate?: boolean,
@@ -17,12 +19,12 @@ export type AutoIncSettings = {
   outputFilter?: (count: number) => number,
 };
 
-export type AutoIncOptions = string | AutoIncSettings;
+export type AutoIncOptions = AutoIncSettings | Object | string;
 
-// The function to use when invoking the plugin on a custom schema.
-export function autoIncrement(schema: any, options: AutoIncOptions): void;
-
-export default function autoIncrement(schema: any, options: AutoIncOptions): void;
+/**
+ * The function to use when invoking the plugin on a custom schema.
+ */
+declare function autoIncrement(schema: Schema, options?: AutoIncOptions): void;
 
 // Alias for autoIncrement
-export function plugin(schema: any, options: AutoIncOptions): void;
+export function plugin(schema: Schema, options: AutoIncOptions): void;
