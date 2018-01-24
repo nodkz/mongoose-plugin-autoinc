@@ -26,6 +26,7 @@
     "mongoose": ">=4.0.0 || >=5.0.0"
   },
   "devDependencies": {
+    "@types/mongoose": "^4.7.33",
     "async": "^2.6.0",
     "babel-cli": "^6.26.0",
     "babel-eslint": "^8.2.1",

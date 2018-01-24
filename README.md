@@ -24,7 +24,7 @@ Once you have the plugin installed it is very simple to use. Just pass `autoIncr
 
 ````js
 import mongoose from 'mongoose';
-import { autoIncrement } from 'mongoose-auto-increment';
+import { autoIncrement } from 'mongoose-plugin-autoinc';
 
 const connection = mongoose.createConnection("mongodb://localhost/myDatabase");
 
