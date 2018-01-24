@@ -121,6 +121,32 @@
     into-stream "^3.1.0"
     lodash "^4.17.4"
 
+"@types/bson@*":
+  version "1.0.6"
+  resolved "https://registry.yarnpkg.com/@types/bson/-/bson-1.0.6.tgz#8691f042d99dd163a5eb4dd6dde587d3449f7cda"
+  dependencies:
+    "@types/node" "*"
+
+"@types/events@*":
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/@types/events/-/events-1.1.0.tgz#93b1be91f63c184450385272c47b6496fd028e02"
+
+"@types/mongodb@*":
+  version "3.0.4"
+  resolved "https://registry.yarnpkg.com/@types/mongodb/-/mongodb-3.0.4.tgz#5f9e7f368aab176e66b5eb1513815f6f0202600a"
+  dependencies:
+    "@types/bson" "*"
+    "@types/events" "*"
+    "@types/node" "*"
+
+"@types/mongoose@^4.7.33":
+  version "4.7.33"
+  resolved "https://registry.yarnpkg.com/@types/mongoose/-/mongoose-4.7.33.tgz#de77cd613f261c7662bb175102ebc128dce71250"
+  dependencies:
+    "@types/events" "*"
+    "@types/mongodb" "*"
+    "@types/node" "*"
+
 "@types/node@*":
   version "9.3.0"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-9.3.0.tgz#3a129cda7c4e5df2409702626892cb4b96546dd5"
