@@ -36,20 +36,21 @@ const counterSchema = new mongoose.Schema({
   count: { type: Number, default: 0 },
 });
 
-counterSchema.index(
-  {
-    field: 1,
-    groupingField: 1,
-    model: 1,
-  },
-  {
-    unique: true,
-  }
-);
+// Deprecated after upgrading to Mongoose5.
+// counterSchema.index(
+//   {
+//     field: 1,
+//     groupingField: 1,
+//     model: 1,
+//   },
+//   {
+//     unique: true,
+//   }
+// );
 
 export function initialize(): void {
   console.log(
-    `MongooseAutoIncrement.initialize() method is depricated. ` +
+    `MongooseAutoIncrement.initialize() method is deprecated. ` +
       `Just remove this method, it not required anymore.`
   );
 }
