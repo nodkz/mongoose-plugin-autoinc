@@ -7,9 +7,8 @@ import mongoose, {
   type MongooseModel,
 } from 'mongoose';
 
-import {
-  MongoError,
-} from 'mongodb';
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { MongoError } from 'mongodb';
 
 export type AutoIncSettings = {|
   migrate?: boolean, // If this is to be run on a migration for existing records. Only set this on migration processes.
