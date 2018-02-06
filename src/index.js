@@ -52,7 +52,7 @@ counterSchema.index(
 
 export function initialize(): void {
   console.log(
-    `MongooseAutoIncrement.initialize() method is depricated. ` +
+    `MongooseAutoIncrement.initialize() method is deprecated. ` +
       `Just remove this method, it not required anymore.`
   );
 }

@@ -4,12 +4,12 @@ import mongoose from 'mongoose';
 import MongodbMemoryServer from 'mongodb-memory-server';
 import { autoIncrement } from '..';
 
-let connection;
 // May require additional time for downloading MongoDB binaries
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 60000;
 mongoose.Promise = global.Promise;
 
 let mongoServer;
+let connection;
 // const opts = { useMongoClient: true };
 
 beforeAll(async () => {
@@ -51,12 +51,12 @@ afterEach(async () => {
 
 describe('mongoose-auto-increment', () => {
   it('increment the _id field on validate', async () => {
-    const userSchema = new mongoose.Schema({
+    const UserSchema = new mongoose.Schema({
       name: String,
       dept: String,
     });
-    userSchema.plugin(autoIncrement, 'User');
-    const User = connection.model('User', userSchema);
+    UserSchema.plugin(autoIncrement, 'User');
+    const User = connection.model('User', UserSchema);
     await User.ensureIndexes();
 
     const user1 = new User({ name: 'Charlie', dept: 'Support' });
@@ -70,13 +70,13 @@ describe('mongoose-auto-increment', () => {
   });
 
   it('increment the _id field on save', async () => {
-    const userSchema = new mongoose.Schema({
+    const UserSchema = new mongoose.Schema({
       name: String,
       dept: String,
     });
 
-    userSchema.plugin(autoIncrement, 'User');
-    const User = connection.model('User', userSchema);
+    UserSchema.plugin(autoIncrement, 'User');
+    const User = connection.model('User', UserSchema);
     await User.ensureIndexes();
 
     const user1 = new User({ name: 'Charlie', dept: 'Support' });
@@ -89,13 +89,13 @@ describe('mongoose-auto-increment', () => {
   });
 
   it('increment the specified field instead', async () => {
-    const userSchema = new mongoose.Schema({
+    const UserSchema = new mongoose.Schema({
       name: String,
       dept: String,
     });
 
-    userSchema.plugin(autoIncrement, { model: 'User', field: 'userId' });
-    const User = connection.model('User', userSchema);
+    UserSchema.plugin(autoIncrement, { model: 'User', field: 'userId' });
+    const User = connection.model('User', UserSchema);
     await User.ensureIndexes();
 
     const user1 = new User({ name: 'Charlie', dept: 'Support' });
@@ -109,12 +109,12 @@ describe('mongoose-auto-increment', () => {
   });
 
   it('no duplicate key errors when creating docs in parallel', async () => {
-    const userSchema = new mongoose.Schema({
+    const UserSchema = new mongoose.Schema({
       name: String,
       dept: String,
     });
-    userSchema.plugin(autoIncrement, { model: 'User', field: 'userId' });
-    const User = connection.model('User', userSchema);
+    UserSchema.plugin(autoIncrement, { model: 'User', field: 'userId' });
+    const User = connection.model('User', UserSchema);
     await User.ensureIndexes();
 
     const user1 = new User({ name: 'Charlie', dept: 'Support' });
@@ -132,13 +132,13 @@ describe('mongoose-auto-increment', () => {
   });
 
   it('start counting at specified number', async () => {
-    const userSchema = new mongoose.Schema({
+    const UserSchema = new mongoose.Schema({
       name: String,
       dept: String,
     });
 
-    userSchema.plugin(autoIncrement, { model: 'User', startAt: 3 });
-    const User = connection.model('User', userSchema);
+    UserSchema.plugin(autoIncrement, { model: 'User', startAt: 3 });
+    const User = connection.model('User', UserSchema);
     await User.ensureIndexes();
 
     const user1 = new User({ name: 'Charlie', dept: 'Support' });
@@ -152,12 +152,12 @@ describe('mongoose-auto-increment', () => {
   });
 
   it('increment by the specified amount', async () => {
-    const userSchema = new mongoose.Schema({
+    const UserSchema = new mongoose.Schema({
       name: String,
       dept: String,
     });
-    userSchema.plugin(autoIncrement, { model: 'User', incrementBy: 5 });
-    const User = connection.model('User', userSchema);
+    UserSchema.plugin(autoIncrement, { model: 'User', incrementBy: 5 });
+    const User = connection.model('User', UserSchema);
     await User.ensureIndexes();
 
     const user1 = new User({ name: 'Charlie', dept: 'Support' });
@@ -167,7 +167,7 @@ describe('mongoose-auto-increment', () => {
     await user2.save();
 
     expect(() => {
-      userSchema.plugin(autoIncrement);
+      UserSchema.plugin(autoIncrement);
     }).toThrowError('model must be set');
 
     expect(user1._id).toBe(0);
@@ -176,16 +176,16 @@ describe('mongoose-auto-increment', () => {
 
   describe('with incrementor groups', () => {
     it('increment the specified field within the groupingField instead', async () => {
-      const userSchema = new mongoose.Schema({
+      const UserSchema = new mongoose.Schema({
         name: String,
         dept: String,
       });
-      userSchema.plugin(autoIncrement, {
+      UserSchema.plugin(autoIncrement, {
         model: 'User',
         field: 'userId',
         groupingField: 'dept',
       });
-      const User = connection.model('User', userSchema);
+      const User = connection.model('User', UserSchema);
       await User.ensureIndexes();
 
       const user1 = new User({ name: 'Charlie', dept: 'Support' });
@@ -205,13 +205,13 @@ describe('mongoose-auto-increment', () => {
     });
 
     it('should not allow grouping fields with _id as the field', async () => {
-      const userSchema = new mongoose.Schema({
+      const UserSchema = new mongoose.Schema({
         name: String,
         dept: String,
       });
 
       try {
-        userSchema.plugin(autoIncrement, {
+        UserSchema.plugin(autoIncrement, {
           model: 'User',
           groupingField: 'dept',
         });
@@ -225,12 +225,12 @@ describe('mongoose-auto-increment', () => {
 
   describe('nextCount() helper function', () => {
     it('nextCount should return the next count from document', async () => {
-      const userSchema = new mongoose.Schema({
+      const UserSchema = new mongoose.Schema({
         name: String,
         dept: String,
       });
-      userSchema.plugin(autoIncrement, 'User');
-      const User = connection.model('User', userSchema);
+      UserSchema.plugin(autoIncrement, 'User');
+      const User = connection.model('User', UserSchema);
       await User.ensureIndexes();
 
       const user1 = new User({ name: 'Charlie', dept: 'Support' });
@@ -250,12 +250,12 @@ describe('mongoose-auto-increment', () => {
     });
 
     it('nextCount should return the next count from model', async () => {
-      const userSchema = new mongoose.Schema({
+      const UserSchema = new mongoose.Schema({
         name: String,
         dept: String,
       });
-      userSchema.plugin(autoIncrement, 'User');
-      const User = connection.model('User', userSchema);
+      UserSchema.plugin(autoIncrement, 'User');
+      const User = connection.model('User', UserSchema);
       await User.ensureIndexes();
 
       const user1 = new User({ name: 'Charlie', dept: 'Support' });
@@ -275,16 +275,16 @@ describe('mongoose-auto-increment', () => {
     });
 
     it('with incrementor groups return the next count', async () => {
-      const userSchema = new mongoose.Schema({
+      const UserSchema = new mongoose.Schema({
         name: String,
         dept: String,
       });
-      userSchema.plugin(autoIncrement, {
+      UserSchema.plugin(autoIncrement, {
         model: 'User',
         field: 'userId',
         groupingField: 'dept',
       });
-      const User = connection.model('User', userSchema);
+      const User = connection.model('User', UserSchema);
       await User.ensureIndexes();
 
       const user1 = new User({ name: 'Charlie', dept: 'Support' });
@@ -306,12 +306,12 @@ describe('mongoose-auto-increment', () => {
 
   describe('resetCount() helper function', () => {
     it('should reset count via doc method', async () => {
-      const userSchema = new mongoose.Schema({
+      const UserSchema = new mongoose.Schema({
         name: String,
         dept: String,
       });
-      userSchema.plugin(autoIncrement, 'User');
-      const User = connection.model('User', userSchema);
+      UserSchema.plugin(autoIncrement, 'User');
+      const User = connection.model('User', UserSchema);
       await User.ensureIndexes();
 
       const user = new User({ name: 'Charlie', dept: 'Support' });
@@ -328,12 +328,12 @@ describe('mongoose-auto-increment', () => {
     });
 
     it('should reset count via Model method', async () => {
-      const userSchema = new mongoose.Schema({
+      const UserSchema = new mongoose.Schema({
         name: String,
         dept: String,
       });
-      userSchema.plugin(autoIncrement, 'User');
-      const User = connection.model('User', userSchema);
+      UserSchema.plugin(autoIncrement, 'User');
+      const User = connection.model('User', UserSchema);
       await User.ensureIndexes();
 
       const user = new User({ name: 'Charlie', dept: 'Support' });
@@ -351,17 +351,17 @@ describe('mongoose-auto-increment', () => {
   });
 
   it('with string field and output filter increment the counter value only once', async () => {
-    const userSchema = new mongoose.Schema({
+    const UserSchema = new mongoose.Schema({
       orderNumber: Number,
       name: String,
       dept: String,
     });
-    userSchema.plugin(autoIncrement, {
+    UserSchema.plugin(autoIncrement, {
       model: 'User',
       field: 'orderNumber',
       outputFilter: value => value * 100,
     });
-    const User = connection.model('User', userSchema);
+    const User = connection.model('User', UserSchema);
     await User.ensureIndexes();
 
     const user1 = new User({ name: 'Charlie', dept: 'Support' });
@@ -397,16 +397,16 @@ describe('mongoose-auto-increment', () => {
       { _id, count: 79, field: 'orderNumber', model: 'User' },
     ]);
 
-    const userSchema = new mongoose.Schema({
+    const UserSchema = new mongoose.Schema({
       orderNumber: Number,
       name: String,
       dept: String,
     });
-    userSchema.plugin(autoIncrement, {
+    UserSchema.plugin(autoIncrement, {
       model: 'User',
       field: 'orderNumber',
     });
-    const User = connection.model('User', userSchema);
+    const User = connection.model('User', UserSchema);
     await User.ensureIndexes();
 
     const user1 = new User({ name: 'Charlie', dept: 'Support' });
