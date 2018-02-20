@@ -114,7 +114,22 @@ async function createCounterIfNotExist(
       count: settings.startAt - settings.incrementBy,
     }): any);
 
-    await existedCounter.save();
+    try {
+      // this might fail if invoked in parallel
+      await existedCounter.save();
+    } catch (e) {
+      if (isMongoDuplicateError(e)) {
+        // just to be consistent with the method return type
+        // but to tell the truth it could return boolean at this point
+        existedCounter = (await IC.findOne({
+          model: settings.model,
+          field: settings.field,
+          groupingField,
+        }).exec(): any);
+      } else {
+        throw e; // other unhandled errors
+      }
+    }
   }
 
   return (existedCounter: any);
