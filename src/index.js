@@ -122,8 +122,6 @@ async function createCounterIfNotExist(
     }
   } catch (e) {
     if (isMongoDuplicateError(e)) {
-      // just to be consistent with the method return type
-      // but to tell the truth it could return boolean at this point
       return true;
     }
 
