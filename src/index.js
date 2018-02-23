@@ -58,7 +58,10 @@ export function initialize(): void {
 }
 
 function isMongoDuplicateError(e: any): boolean {
-  return e instanceof MongoError && e.code === 11000;
+  return (
+    (e instanceof MongoError && e.code * 1 === 11000) ||
+    (e.name === 'MongoError' && e.code * 1 === 11000)
+  );
 }
 
 // Initialize plugin by creating counter collection in database.
@@ -82,7 +85,7 @@ async function createCounterIfNotExist(
   IC: IdentityCounterModel,
   settings: AutoIncSettings,
   doc: MongooseDocument
-): Promise<IdentityCounterDoc> {
+): Promise<boolean> {
   const groupingField = doc.get(settings.groupingField) || '';
 
   let existedCounter: IdentityCounterDoc = (await IC.findOne({
@@ -93,53 +96,49 @@ async function createCounterIfNotExist(
 
   // Check old record without `groupingField`,
   // so let fix this record by adding this field
-  if (!existedCounter) {
-    existedCounter = (await IC.findOne({
-      model: settings.model,
-      field: settings.field,
-      groupingField: { $exists: false },
-    }): any);
-    if (existedCounter) {
-      existedCounter.groupingField = '';
-      await existedCounter.save();
-    }
-  }
-
-  if (!existedCounter) {
-    // If no counter exists then create one and save it.
-    existedCounter = (new IC({
-      model: settings.model,
-      field: settings.field,
-      groupingField,
-      count: settings.startAt - settings.incrementBy,
-    }): any);
-
-    try {
-      // this might fail if invoked in parallel
-      await existedCounter.save();
-    } catch (e) {
-      if (isMongoDuplicateError(e)) {
-        // just to be consistent with the method return type
-        // but to tell the truth it could return boolean at this point
-        existedCounter = (await IC.findOne({
-          model: settings.model,
-          field: settings.field,
-          groupingField,
-        }).exec(): any);
-      } else {
-        throw e; // other unhandled errors
+  try {
+    if (!existedCounter) {
+      existedCounter = (await IC.findOne({
+        model: settings.model,
+        field: settings.field,
+        groupingField: { $exists: false },
+      }): any);
+      if (existedCounter) {
+        existedCounter.groupingField = '';
+        await existedCounter.save();
       }
     }
+
+    if (!existedCounter) {
+      // If no counter exists then create one and save it.
+      existedCounter = (new IC({
+        model: settings.model,
+        field: settings.field,
+        groupingField,
+        count: settings.startAt - settings.incrementBy,
+      }): any);
+
+      await existedCounter.save();
+    }
+  } catch (e) {
+    if (isMongoDuplicateError(e)) {
+      // just to be consistent with the method return type
+      // but to tell the truth it could return boolean at this point
+      return true;
+    }
+
+    throw e; // other unhandled errors
   }
 
-  return (existedCounter: any);
+  return true;
 }
 
 async function preSave(
   IC: IdentityCounterModel,
   settings: AutoIncSettings,
   doc: MongooseDocument,
-  next: Function
+  next: Function,
+  attempts: number = 0
 ) {
   try {
     await createCounterIfNotExist(IC, settings, doc);
@@ -197,8 +196,8 @@ async function preSave(
 
     next();
   } catch (err) {
-    if (isMongoDuplicateError(err)) {
-      setTimeout(() => preSave(IC, settings, doc, next), 5);
+    if (isMongoDuplicateError(err) && attempts * 1 < 10) {
+      setTimeout(() => preSave(IC, settings, doc, next, attempts + 1), 5);
     } else {
       next(err);
     }
