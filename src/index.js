@@ -139,7 +139,10 @@ async function preSave(
   attempts: number = 0
 ) {
   try {
-    await createCounterIfNotExist(IC, settings, doc);
+    // it is a first run
+    if (!attempts) {
+      await createCounterIfNotExist(IC, settings, doc);
+    }
 
     if (typeof doc.get(settings.field) === 'number') {
       // check that a number has already been provided, and update the counter
@@ -275,10 +278,8 @@ export function autoIncrement(
     throw new Error('model must be set');
   }
 
-  if (settings.field === '_id') {
-    if (settings.groupingField.length) {
-      throw new Error('Cannot use a grouping field with _id, choose a different field name.');
-    }
+  if (settings.field === '_id' && settings.groupingField.length) {
+    throw new Error('Cannot use a grouping field with _id, choose a different field name.');
   }
 
   if (!schema.path(settings.field) || settings.field === '_id') {
