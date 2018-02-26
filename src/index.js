@@ -7,9 +7,6 @@ import mongoose, {
   type MongooseModel,
 } from 'mongoose';
 
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { MongoError } from 'mongodb';
-
 export type AutoIncSettings = {|
   migrate?: boolean, // If this is to be run on a migration for existing records. Only set this on migration processes.
   model: string, // The model to configure the plugin for.
@@ -58,10 +55,7 @@ export function initialize(): void {
 }
 
 function isMongoDuplicateError(e: any): boolean {
-  return (
-    (e instanceof MongoError && e.code * 1 === 11000) ||
-    (e.name === 'MongoError' && e.code * 1 === 11000)
-  );
+  return e.code * 1 === 11000;
 }
 
 // Initialize plugin by creating counter collection in database.
