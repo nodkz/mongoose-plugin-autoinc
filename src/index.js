@@ -85,7 +85,7 @@ async function createCounterIfNotExist(
   IC: IdentityCounterModel,
   settings: AutoIncSettings,
   doc: MongooseDocument
-): Promise<boolean> {
+): Promise<void> {
   const groupingField = doc.get(settings.groupingField) || '';
 
   let existedCounter: IdentityCounterDoc = (await IC.findOne({
@@ -94,10 +94,10 @@ async function createCounterIfNotExist(
     groupingField,
   }).exec(): any);
 
-  // Check old record without `groupingField`,
-  // so let fix this record by adding this field
   try {
     if (!existedCounter) {
+      // Check old record format without `groupingField`,
+      // convert old record to the new format
       existedCounter = (await IC.findOne({
         model: settings.model,
         field: settings.field,
@@ -122,13 +122,11 @@ async function createCounterIfNotExist(
     }
   } catch (e) {
     if (isMongoDuplicateError(e)) {
-      return true;
+      return;
     }
 
     throw e; // other unhandled errors
   }
-
-  return true;
 }
 
 async function preSave(
