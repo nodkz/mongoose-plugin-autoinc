@@ -3,10 +3,10 @@
   "version": "0.0.1",
   "description": "==fix-bug==This plugin allows you to auto-increment any field on any mongoose schema that you wish (forked mongoose-auto-increment in 2018).",
   "files": [
-    "src"
+    "lib"
   ],
-  "main": "src/index.js",
-  "types": "src/index.d.ts",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
   "repository": {
     "type": "git",
     "url": "https://github.com/bigdong89/mongoose-plugin-autoinc.git"
