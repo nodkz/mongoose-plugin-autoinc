@@ -315,7 +315,7 @@ export function autoIncrement(
   });
 
   // Every time documents in this schema are saved, run this logic.
-  schema.pre('validate', function(next: Function) {
+  schema.post('validate', function(next: Function) {
     // Get reference to the document being saved.
     const doc: MongooseDocument = this;
     // $FlowFixMe
