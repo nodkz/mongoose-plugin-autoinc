@@ -29,10 +29,10 @@ import { autoIncrement } from 'mongoose-plugin-autoinc';
 const connection = mongoose.createConnection("mongodb://localhost/myDatabase");
 
 const BookSchema = new mongoose.Schema({
-    author: { type: Schema.Types.ObjectId, ref: 'Author' },
-    title: String,
-    genre: String,
-    publishDate: Date
+  author: { type: Schema.Types.ObjectId, ref: 'Author' },
+  title: String,
+  genre: String,
+  publishDate: Date
 });
 
 BookSchema.plugin(autoIncrement, 'Book');
@@ -43,14 +43,14 @@ That's it. Now you can create book entities at will and they will have an `_id` 
 
 ````js
 const AuthorSchema = new mongoose.Schema({
-    name: String
+  name: String
 });
 
 const BookSchema = new mongoose.Schema({
-    author: { type: Number, ref: 'Author' },
-    title: String,
-    genre: String,
-    publishDate: Date
+  author: { type: Number, ref: 'Author' },
+  title: String,
+  genre: String,
+  publishDate: Date
 });
 
 BookSchema.plugin(autoIncrement, 'Book');
@@ -67,10 +67,10 @@ BookSchema.plugin(autoIncrement, { model: 'Book', field: 'bookId' });
 
 ````js
 BookSchema.plugin(autoIncrement, {
-    model: 'Book',
-    field: 'bookId',
-    startAt: 100,
-    incrementBy: 100
+  model: 'Book',
+  field: 'bookId',
+  startAt: 100,
+  incrementBy: 100
 });
 ````
 
@@ -80,53 +80,39 @@ Your first book document would have a `bookId` equal to `100`. Your second book 
 
 ````js
 const Book = connection.model('Book', BookSchema);
-Book.nextCount((err, count) => {
-
-    // count === 0 -> true
-
-    const book = new Book();
-    book.save(err1 => {
-
-        // book._id === 0 -> true
-
-        book.nextCount((err2, count) => {
-
-            // count === 1 -> true
-
-        });
+Book.nextCount().then(count => {
+  // count === 0 -> true
+  const book = new Book();
+  book.save(err1 => {
+    // book._id === 0 -> true
+    book.nextCount().then(count => {
+      // count === 1 -> true
     });
+  });
 });
 ````
 
-nextCount is both a static method on the model (`Book.nextCount(...)`) and an instance method on the document (`book.nextCount(...)`).
+`nextCount` is both a static method on the model (`Book.nextCount(...)`) and an instance method on the document (`book.nextCount(...)`).
 
 ### Want to reset counter back to the start value?
 
 ````js
 BookSchema.plugin(autoIncrement, {
-    model: 'Book',
-    field: 'bookId',
-    startAt: 100
+  model: 'Book',
+  field: 'bookId',
+  startAt: 100
 });
 
 const Book = connection.model('Book', BookSchema),
-    book = new Book();
+book = new Book();
 
 book.save(err => {
-
-    // book._id === 100 -> true
-
-    book.nextCount((err1, count) => {
-
-        // count === 101 -> true
-
-        book.resetCount((err2, nextCount) => {
-
-            // nextCount === 100 -> true
-
-        });
-
+  // book._id === 100 -> true
+  book.nextCount().then(count => {
+    // count === 101 -> true
+    book.resetCount().then(nextCount => {
+      // nextCount === 100 -> true
     });
-
+  });
 });
 ````
