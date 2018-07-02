@@ -9,11 +9,14 @@ beforeAll(async () => {
   mongoServer = new MongodbMemoryServer();
   const mongoUrl = await mongoServer.getConnectionString();
 
-  mongoose.connect(mongoUrl, {
-    autoReconnect: true,
-    reconnectInterval: 100,
-    reconnectTries: Number.MAX_VALUE,
-  });
+  mongoose.connect(
+    mongoUrl,
+    {
+      autoReconnect: true,
+      reconnectInterval: 100,
+      reconnectTries: Number.MAX_VALUE,
+    }
+  );
 });
 afterAll(() => {
   mongoose.disconnect();
@@ -44,7 +47,7 @@ describe('issue #21', () => {
       if (err) console.log('Error:', err);
       else {
         a.nextCount().then(count => {
-          console.log('count:', count);
+          expect(count).toBe(1);
           done();
         });
       }
