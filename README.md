@@ -20,8 +20,6 @@ This is a fork of [mongoose-auto-increment](https://github.com/chevex-archived/m
 
 Once you have the plugin installed it is very simple to use. Just pass `autoIncrement` to the `plugin()` function on your schema.
 
-> Note: You only need to initialize MAI once.
-
 ````js
 import mongoose from 'mongoose';
 import { autoIncrement } from 'mongoose-plugin-autoinc';
