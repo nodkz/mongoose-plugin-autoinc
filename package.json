@@ -1,7 +1,7 @@
 {
-  "name": "mongoose-plugin-autoinc",
-  "version": "0.0.0-development",
-  "description": "This plugin allows you to auto-increment any field on any mongoose schema that you wish (forked mongoose-auto-increment in 2018).",
+  "name": "mongoose-plugin-autoinc-fix",
+  "version": "0.0.5",
+  "description": "==fix-bug==This plugin allows you to auto-increment any field on any mongoose schema that you wish (forked mongoose-auto-increment in 2018).",
   "files": [
     "lib"
   ],
@@ -9,7 +9,7 @@
   "types": "lib/index.d.ts",
   "repository": {
     "type": "git",
-    "url": "https://github.com/nodkz/mongoose-plugin-autoinc.git"
+    "url": "https://github.com/bigdong89/mongoose-plugin-autoinc.git"
   },
   "keywords": [
     "mongoose",
@@ -21,7 +21,7 @@
   "bugs": {
     "url": "https://github.com/nodkz/mongoose-plugin-autoinc/issues"
   },
-  "homepage": "https://github.com/nodkz/mongoose-plugin-autoinc",
+  "homepage": "https://github.com/bigdong89/mongoose-plugin-autoinc",
   "peerDependencies": {
     "mongoose": ">=4.0.0 || >=5.0.0"
   },
@@ -80,5 +80,6 @@
     "flow": "./node_modules/.bin/flow",
     "test": "npm run coverage && npm run lint && npm run flow",
     "semantic-release": "semantic-release"
-  }
+  },
+  "dependencies": {}
 }
