@@ -24,7 +24,8 @@ The following issues were fixed by [nodkz](https://github.com/nodkz/mongoose-plu
 
 ## Getting Started
 
-> npm install mongoose-plugin-autoinc
+> npm install mongoose-plugin-autoinc-fix
+> yarn add mongoose-plugin-autoinc-fix
 
 Once you have the plugin installed it is very simple to use. Just pass `autoIncrement` to the `plugin()` function on your schema.
 
