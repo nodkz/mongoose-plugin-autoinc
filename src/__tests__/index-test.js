@@ -16,14 +16,15 @@ beforeAll(async () => {
   mongoServer = new MongodbMemoryServer();
   const mongoUrl = await mongoServer.getConnectionString();
 
-  connection = await mongoose
-    .createConnection(mongoUrl, {
+  mongoose
+    .connect(mongoUrl, {
       autoReconnect: true,
       reconnectInterval: 100,
       reconnectTries: Number.MAX_VALUE,
     })
     // $FlowFixMe
     .catch(() => {});
+  connection = mongoose.connection;
   // connection.on('error', (...args) => console.error(...args));
 });
 
@@ -56,7 +57,7 @@ describe('mongoose-auto-increment', () => {
       dept: String,
     });
     UserSchema.plugin(autoIncrement, 'User');
-    const User = connection.model('User', UserSchema);
+    const User = mongoose.model('User', UserSchema);
     await User.ensureIndexes();
 
     const user1 = new User({ name: 'Charlie', dept: 'Support' });
@@ -76,7 +77,7 @@ describe('mongoose-auto-increment', () => {
     });
 
     UserSchema.plugin(autoIncrement, 'User');
-    const User = connection.model('User', UserSchema);
+    const User = mongoose.model('User', UserSchema);
     await User.ensureIndexes();
 
     const user1 = new User({ name: 'Charlie', dept: 'Support' });
@@ -95,7 +96,7 @@ describe('mongoose-auto-increment', () => {
     });
 
     UserSchema.plugin(autoIncrement, { model: 'User', field: 'userId' });
-    const User = connection.model('User', UserSchema);
+    const User = mongoose.model('User', UserSchema);
     await User.ensureIndexes();
 
     const user1 = new User({ name: 'Charlie', dept: 'Support' });
@@ -114,7 +115,7 @@ describe('mongoose-auto-increment', () => {
       dept: String,
     });
     UserSchema.plugin(autoIncrement, { model: 'User', field: 'userId' });
-    const User = connection.model('User', UserSchema);
+    const User = mongoose.model('User', UserSchema);
     await User.ensureIndexes();
 
     const user1 = new User({ name: 'Charlie', dept: 'Support' });
@@ -138,7 +139,7 @@ describe('mongoose-auto-increment', () => {
     });
 
     UserSchema.plugin(autoIncrement, { model: 'User', startAt: 3 });
-    const User = connection.model('User', UserSchema);
+    const User = mongoose.model('User', UserSchema);
     await User.ensureIndexes();
 
     const user1 = new User({ name: 'Charlie', dept: 'Support' });
@@ -157,7 +158,7 @@ describe('mongoose-auto-increment', () => {
       dept: String,
     });
     UserSchema.plugin(autoIncrement, { model: 'User', incrementBy: 5 });
-    const User = connection.model('User', UserSchema);
+    const User = mongoose.model('User', UserSchema);
     await User.ensureIndexes();
 
     const user1 = new User({ name: 'Charlie', dept: 'Support' });
@@ -185,7 +186,7 @@ describe('mongoose-auto-increment', () => {
         field: 'userId',
         groupingField: 'dept',
       });
-      const User = connection.model('User', UserSchema);
+      const User = mongoose.model('User', UserSchema);
       await User.ensureIndexes();
 
       const user1 = new User({ name: 'Charlie', dept: 'Support' });
@@ -230,7 +231,7 @@ describe('mongoose-auto-increment', () => {
         dept: String,
       });
       UserSchema.plugin(autoIncrement, 'User');
-      const User = connection.model('User', UserSchema);
+      const User = mongoose.model('User', UserSchema);
       await User.ensureIndexes();
 
       const user1 = new User({ name: 'Charlie', dept: 'Support' });
@@ -255,7 +256,7 @@ describe('mongoose-auto-increment', () => {
         dept: String,
       });
       UserSchema.plugin(autoIncrement, 'User');
-      const User = connection.model('User', UserSchema);
+      const User = mongoose.model('User', UserSchema);
       await User.ensureIndexes();
 
       const user1 = new User({ name: 'Charlie', dept: 'Support' });
@@ -284,7 +285,7 @@ describe('mongoose-auto-increment', () => {
         field: 'userId',
         groupingField: 'dept',
       });
-      const User = connection.model('User', UserSchema);
+      const User = mongoose.model('User', UserSchema);
       await User.ensureIndexes();
 
       const user1 = new User({ name: 'Charlie', dept: 'Support' });
@@ -311,7 +312,7 @@ describe('mongoose-auto-increment', () => {
         dept: String,
       });
       UserSchema.plugin(autoIncrement, 'User');
-      const User = connection.model('User', UserSchema);
+      const User = mongoose.model('User', UserSchema);
       await User.ensureIndexes();
 
       const user = new User({ name: 'Charlie', dept: 'Support' });
@@ -333,7 +334,7 @@ describe('mongoose-auto-increment', () => {
         dept: String,
       });
       UserSchema.plugin(autoIncrement, 'User');
-      const User = connection.model('User', UserSchema);
+      const User = mongoose.model('User', UserSchema);
       await User.ensureIndexes();
 
       const user = new User({ name: 'Charlie', dept: 'Support' });
@@ -361,7 +362,7 @@ describe('mongoose-auto-increment', () => {
       field: 'orderNumber',
       outputFilter: value => value * 100,
     });
-    const User = connection.model('User', UserSchema);
+    const User = mongoose.model('User', UserSchema);
     await User.ensureIndexes();
 
     const user1 = new User({ name: 'Charlie', dept: 'Support' });
@@ -406,7 +407,7 @@ describe('mongoose-auto-increment', () => {
       model: 'User',
       field: 'orderNumber',
     });
-    const User = connection.model('User', UserSchema);
+    const User = mongoose.model('User', UserSchema);
     await User.ensureIndexes();
 
     const user1 = new User({ name: 'Charlie', dept: 'Support' });

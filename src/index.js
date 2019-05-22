@@ -48,10 +48,10 @@ counterSchema.index(
 );
 
 export function initialize(): void {
-  console.log(
+  /* console.log(
     `MongooseAutoIncrement.initialize() method is deprecated. ` +
       `Just remove this method, it not required anymore.`
-  );
+  ); */
 }
 
 function isMongoDuplicateError(e: any): boolean {
@@ -315,9 +315,9 @@ export function autoIncrement(
   });
 
   // Every time documents in this schema are saved, run this logic.
-  schema.post('validate', function(doc: MongooseDocument, next: Function) {
+  schema.post('validate', (doc: MongooseDocument, next: Function) => {
     // Get reference to the document being saved.
-    //const doc: MongooseDocument = this;
+    // const doc: MongooseDocument = this;
     // $FlowFixMe
     const alreadyGetId = doc.__maiRanOnce === true;
 

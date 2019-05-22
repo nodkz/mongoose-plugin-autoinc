@@ -9,21 +9,24 @@ jasmine.DEFAULT_TIMEOUT_INTERVAL = 60000;
 mongoose.Promise = global.Promise;
 
 let mongoServer;
-let connection;
+// let connection;
 
 beforeAll(async () => {
   mongoServer = new MongodbMemoryServer();
   const mongoUrl = await mongoServer.getConnectionString();
 
-  connection = await mongoose
-    .createConnection(mongoUrl, {
+  mongoose
+    .connect(mongoUrl, {
       autoReconnect: true,
       reconnectInterval: 100,
       reconnectTries: Number.MAX_VALUE,
     })
     // $FlowFixMe
     .catch(() => {});
-  connection.on('error', (...args) => console.error(...args));
+  // connection = mongoose.connection;
+  /* connection.on('error', (...args) => {
+    // console.error(...args);
+  }); */
 });
 
 afterAll(() => {
@@ -40,7 +43,7 @@ describe('parallel writing', () => {
       dept: String,
     });
     UserSchema.plugin(autoIncrement, 'User');
-    const User = connection.model('User', UserSchema);
+    const User = mongoose.model('User', UserSchema);
 
     async function createUserAsync() {
       return User.create({
@@ -72,7 +75,7 @@ describe('parallel writing', () => {
       dept: String,
     });
     UserPidSchema.plugin(autoIncrement, { model: 'UserPid', field: 'pid' });
-    const UserPid = connection.model('UserPid', UserPidSchema);
+    const UserPid = mongoose.model('UserPid', UserPidSchema);
 
     async function createUserPidAsync() {
       return UserPid.create({
