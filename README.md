@@ -7,7 +7,15 @@
 
 ---
 
-This is a fork of [mongoose-auto-increment](https://github.com/chevex-archived/mongoose-auto-increment) which has not been maintained in a while. Also used fixes and changes from [dashride fork](https://github.com/Dashride/mongoose-auto-increment). This fork addresses the following issues:
+This is a fork of [nodkz/mongoose-auto-increment](https://github.com/nodkz/mongoose-auto-increment) which has not been maintained in a while.This fork addresses the following issues:
+- fix errors during testing
+- After `run test`, `run flow` output error `'The first parameter is incompatible'`. However, it was the same as nodz's version.
+- fix errors in README.md `call nextCount and resetCount methods wrongly`
+- tested with Mongoose 5
+- upload to yarnpkg.com as `'mongoose-plugin-autoinc-fix'`
+- increment version number started from nodkz's version
+
+The following issues were fixed by [nodkz](https://github.com/nodkz/mongoose-plugin-autoinc).Also used fixes and changes from [dashride fork](https://github.com/Dashride/mongoose-auto-increment).
 - fix error `'required' is not valid for an index specification` for Mongoose 4
 - does not require established connection for initialization **(deprecate `initialize()` method)**
 - include Flowtype and Typescript declarations
@@ -80,7 +88,7 @@ Your first book document would have a `bookId` equal to `100`. Your second book 
 
 ````js
 const Book = connection.model('Book', BookSchema);
-Book.nextCount((err, count) => {
+Book.nextCount().then(count => {
 
     // count === 0 -> true
 
@@ -89,7 +97,7 @@ Book.nextCount((err, count) => {
 
         // book._id === 0 -> true
 
-        book.nextCount((err2, count) => {
+        book.nextCount().then(count => {
 
             // count === 1 -> true
 
@@ -116,11 +124,11 @@ book.save(err => {
 
     // book._id === 100 -> true
 
-    book.nextCount((err1, count) => {
+    book.nextCount().then(count => {
 
         // count === 101 -> true
 
-        book.resetCount((err2, nextCount) => {
+        book.resetCount().then(nextCount => {
 
             // nextCount === 100 -> true
 
