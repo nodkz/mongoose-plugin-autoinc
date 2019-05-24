@@ -1,4 +1,4 @@
-# mongoose-plugin-autoinc
+# mongoose-plugin-autoinc-fix
 [![](https://img.shields.io/npm/v/mongoose-plugin-autoinc.svg)](https://www.npmjs.com/package/mongoose-plugin-autoinc)
 [![codecov coverage](https://img.shields.io/codecov/c/github/nodkz/mongoose-plugin-autoinc.svg)](https://codecov.io/github/nodkz/mongoose-plugin-autoinc)
 [![Travis](https://img.shields.io/travis/nodkz/mongoose-plugin-autoinc.svg?maxAge=2592000)](https://travis-ci.org/nodkz/mongoose-plugin-autoinc)
@@ -25,6 +25,7 @@ The following issues were fixed by [nodkz](https://github.com/nodkz/mongoose-plu
 ## Getting Started
 
 > npm install mongoose-plugin-autoinc-fix
+
 > yarn add mongoose-plugin-autoinc-fix
 
 Once you have the plugin installed it is very simple to use. Just pass `autoIncrement` to the `plugin()` function on your schema.
@@ -33,9 +34,9 @@ Once you have the plugin installed it is very simple to use. Just pass `autoIncr
 
 ````js
 import mongoose from 'mongoose';
-import { autoIncrement } from 'mongoose-plugin-autoinc';
+import { autoIncrement } from 'mongoose-plugin-autoinc-fix';
 
-const connection = mongoose.createConnection("mongodb://localhost/myDatabase");
+mongoose.connect("mongodb://localhost/myDatabase");
 
 const BookSchema = new mongoose.Schema({
     author: { type: Schema.Types.ObjectId, ref: 'Author' },
@@ -45,7 +46,7 @@ const BookSchema = new mongoose.Schema({
 });
 
 BookSchema.plugin(autoIncrement, 'Book');
-const Book = connection.model('Book', BookSchema);
+const Book = mongoose.model('Book', BookSchema);
 ````
 
 That's it. Now you can create book entities at will and they will have an `_id` field added of type `Number` and will automatically increment with each new document. Even declaring references is easy, just remember to change the reference property's type to `Number` instead of `ObjectId` if the referenced model is also using the plugin.
