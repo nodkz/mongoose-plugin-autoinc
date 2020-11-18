@@ -49,7 +49,7 @@
     "mongoose": "^5.1.7",
     "prettier": "^1.13.7",
     "rimraf": "^2.6.2",
-    "semantic-release": "^15.6.1",
+    "semantic-release": "^17.2.3",
     "tslint": "^5.10.0",
     "typescript": "^2.9.2"
   },
