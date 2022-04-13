@@ -27,7 +27,7 @@
   },
   "devDependencies": {
     "@types/mongoose": "^5.0.18",
-    "async": "^2.6.1",
+    "async": "^3.2.2",
     "babel-cli": "^6.26.0",
     "babel-eslint": "^8.2.5",
     "babel-jest": "^23.2.0",
